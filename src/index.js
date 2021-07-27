@@ -1,17 +1,52 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import App from './components/app';
+
+import {createGlobalStyle} from 'styled-components';
+import img from './img/fon.jpg';
+import roboto300 from './fonts/Roboto-Light.ttf';
+import roboto400 from './fonts/Roboto-Medium.ttf';
+import roboto500 from './fonts/Roboto-Regular.ttf';
+
+const Global = createGlobalStyle`
+    * {
+        font-family: 'Roboto';
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background: url(${img}) top center no-repeat;
+    }
+    @font-face {
+        font-family: 'Roboto';
+        src: url(${roboto300}) format('truetype');
+        font-weight: 300;
+        font-style: normal;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'Roboto';
+        src: url(${roboto400}) format('truetype');
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: 'Roboto';
+        src: url(${roboto500}) format('truetype');
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+    }
+`
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
+  <>
+    <Global/>
+    <App/>
+  </>,
+  document.querySelector('#root')
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+
