@@ -1,26 +1,25 @@
 import React, {Component} from 'react';
 
-import styled from 'styled-components';
+import {styledObj} from '../app';
 
-const Title = styled.div``
-const List = styled.ul``
+export default class Data extends Component {
 
-class Data extends Component {
-
-    
     render() {
-        const {data, title, textTitle, list} = this.props;
+        const {data, textTitle} = this.props;
+        const {List, Title} = styledObj;
+
         const {name} = data;
-            return (
-                <>
-                    <Title as={title}>{textTitle}{name}</Title>
-                    <List as={list}>
-                        {React.Children.map(this.props.children, (child) => {
-                            return React.cloneElement(child, {data});
-                        })}
-                    </List>
-                </>
-            )    
+
+        return (
+            <>
+                <Title>{textTitle}{name}</Title>
+                <List>
+                    {React.Children.map(this.props.children, (child) => {
+                        return React.cloneElement(child, {data});
+                    })}
+                </List>
+            </>
+        )    
     }
     
 }

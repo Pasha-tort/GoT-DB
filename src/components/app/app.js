@@ -1,46 +1,30 @@
 import React, {Component} from 'react';
-// import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 import styled from 'styled-components';
 
-import RandomData from '../randomData';
-import ItemList from '../itemList';
-import OutputData from '../outputData';
+import {ContainerRandomData} from '../randomData';
 import Header from '../header/header';
-// import CharactersPage from '../pages/charactersPage/charactersPage';
-// import ErrorMessage from '../errorMessage';
+import {PageCharacters, PageBooks, PageHouses} from '../pages';
 
 
 const BodyApp = styled.div`
     margin-top: 60px;
     display: grid;
-    grid-template-columns: 0.6fr 1fr 0.6fr;
+    grid-template-columns: 0.4fr 1fr;
     justify-items: center;
     align-items: start;
-    height: calc(100vh - 180px);
 `
 
-const ContainerRandomData = styled.div`
-    width: 90%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-`
-
-const FixContainerHeight = styled.div`
-    min-height: 260px;
-    width: 100%;
-`
-
-const WraperList = styled.div`
+const Wrapper = styled.div`
     display: flex;
     flex-direction: column;
     width: ${(props) => props.width || '90%'};
     height: ${(props) => props.height || null};
     background: rgba(256, 256, 256, 0.6);
+    overflow: hidden;
     border-radius: 10px;
     text-align: center;
-    overflow: auto;
 `
 
 const Title = styled.div`
@@ -54,6 +38,7 @@ const Title = styled.div`
 
 const List = styled.ul`
     list-style-type: none;
+    border-radius: 10px;
     li {
         border-bottom: 1px solid grey;
         height: 40px;
@@ -61,84 +46,30 @@ const List = styled.ul`
     }
 `
 
-const ButtonShowRandomData = styled.button`
-    margin-top: 20px;
-    width: 160px;
-    height: 50px;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    background: #fff;
-    color: rgb(52, 52, 189);
-    transition: 0.2s all;
-    font-size: 18px;
-    :hover {
-        background: rgb(52, 52, 189);
-        color: #fff;
-        transition: 0.2s all;
-    }
-`
-
+export const styledObj = {
+    Wrapper,
+    Title,
+    List,
+}
 
 export default class App extends Component {
-
-    state = {
-        showRandomData : true,
-        typeSection : 'characters',
-        outputDataId : null,
-        error: false,
-    }
-
-    // componentDidCatch = () => {
-    //     this.setState({
-    //         error : true,
-    //     });
-    // }
-
-    onShowRandomData = () => {
-        this.setState(({showRandomData}) => {
-            return {
-                showRandomData : !showRandomData
-            }
-        })
-    }
 
     onClickHeader = (type) => {
         this.setState({typeSection : type});
     }
 
-    onClickItem = (id) => {
-        this.setState({outputDataId : id});
-    }
-    
-
     render() {
-        const {showRandomData, typeSection, outputDataId} = this.state;
-
-        const styledObj = {
-            wrapper: WraperList,
-            title: Title,
-            list: List,
-        }
-
-        let textRandomBlockButton = showRandomData ? 'Скрыть данные' : 'Показать данные';
-        let randomData = showRandomData ? <RandomData styled={styledObj}/> : null;
-
         return (
-            <>
+            <Router>
                 <Header onClickHeader={this.onClickHeader}/>
                 <BodyApp>
-                    <ContainerRandomData>
-                        <FixContainerHeight>
-                            {randomData}
-                        </FixContainerHeight>
-                        <ButtonShowRandomData onClick={this.onShowRandomData}>{textRandomBlockButton}</ButtonShowRandomData>
-                    </ContainerRandomData>
-                    {/* <CharactersPage styled={styledObj}/> */}
-                    <ItemList typeSection={typeSection} styled={styledObj} dataId={outputDataId} onClickItem={this.onClickItem}/>
-                    <OutputData styled={styledObj} dataId={outputDataId} typeSection={typeSection}/>
+                    <ContainerRandomData/>
+                    <Route path='/' component={false}/>
+                    <Route path='/characters/' component={PageCharacters}/>
+                    <Route path='/books/' component={PageBooks}/>
+                    <Route path='/houses/' component={PageHouses}/>
                 </BodyApp>
-            </>
+            </Router>
         )
     }
 }

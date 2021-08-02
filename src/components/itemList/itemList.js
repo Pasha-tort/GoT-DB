@@ -1,17 +1,13 @@
-import React, {Component} from 'react';
+import React, { useState, useEffect} from 'react';
 
 import styled from 'styled-components';
+import {styledObj} from '../app';
 
 import Spinner from '../spinner';
-import GoTServices from '../../services/GoTServices';
-import ErrorMessage from '../errorMessage';
-
-const Title = styled.div``
-const Wrapper = styled.div``
-const List = styled.ul``
 
 const ContainerScroolBar = styled.div`
     overflow: auto;
+   
     &::-webkit-scrollbar {
         width: 10px;
         border-left: 1px solid grey;
@@ -74,173 +70,144 @@ const FilterPageItem = styled.li`
     color: ${props => props.styled || null};
 `
 
-export default class ItemList extends Component {
-    
-    got = new GoTServices();
+const SpinnerStyled = styled.div`
+    width: 300px;
+`
 
-    state = {
-        dataList: null,
-        page : 1,
-        filterPage : 50,
-        loading: false,
-        error: false,
-    }
+function ItemList({getData, onClickItem, titleList, itemsAmount}) {
 
-    componentDidMount() {
-        this.updateData();
-    }
+    const [itemList, updateItemList] = useState(null);
+    const [activeItem, setActiveItem] = useState([]);
+    const [page, setPage] = useState(1);
+    const [filterPage, setFilterPage] = useState(50);
+    const [loading, updateLoading] = useState(false);
 
-    componentDidUpdate(prevProps, prevState) {
-        if (this.props.typeSection !== prevProps.typeSection) {
-            this.updateData();
-        }
-        if (this.state.page !== prevState.page || this.state.filterPage !== prevState.filterPage) {
-            this.updateData();
-        }
-    }
+    useEffect(() => {
+        console.log('update');
+        updateLoading(true);
+        getData(page, filterPage)
+            .then(data => {
+                updateItemList(data);
+                updateLoading(false);
+            });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, filterPage]);
 
-    updateData = () => {
-        const {typeSection} = this.props;
-        const {page, filterPage} = this.state;
-
-        this.setState({dataList : null})
-        this.setState({loading : true});
-
-        let getData = null;
-
-        switch (typeSection) {
-            case 'characters':
-                getData = this.got.getCharactersAll(page, filterPage);
-                break;
-            case 'books':
-                getData = this.got.getBooksAll();
-                break;
-            case 'houses':
-                getData = this.got.getHousesAll(page, filterPage);
-                break;
-            default:
-                getData = null;
-        }
-
-        if (getData) {
-            getData
-                .then(dataList => this.setState({dataList, loading : false}))
-                .catch(this.onError); 
-        }
-    }
-   
-   
-    onClickItemPage = (e) => {
-        this.setState({page: e.target.value});
-    }
-
-    onClickFilterItem = (e) => {
-        this.setState({filterPage: e.target.value});
-    }
-
-    renderItem = (list) => {
+    function renderItem(list) {
         const regexp = /\d/g;
         return list.map(item => {
+
             const id = item.url.match(regexp).join('');
             let styled = null;
-            if (this.props.dataId === id) {
+
+            if (activeItem === id) {
                 styled = '#fff';
             }
+
             return (
-                <ListItem key={id} styled={styled} onClick={() => this.props.onClickItem(id)}>{item.name}</ListItem>
+                <ListItem 
+                    key={id} 
+                    styled={styled}
+                    onClick={() => {
+                        onClickItem(id);
+                        setActiveItem(id);
+                    }}>
+                        {item.name}
+                </ListItem>
             )
         })
     }
 
-    renderItemPage = (num) => {
-        const numPage = Math.ceil(num/this.state.filterPage);
+    function renderItemPage (num) {
+        const numPage = Math.ceil(num/filterPage);
         const arr = [null];
+
         for (let i = 1; i <= numPage; i++) {
             arr.push(i);
         }
+
         arr.shift();
         return arr.map((item, i) => {
             let styled = null;
-            if (i+1 === this.state.page) {
+            if (i+1 === page) {
                 styled = 'blue';
             }
             return (
-                <ItemListPage key={item} value={item} styled={styled} onClick={this.onClickItemPage}>{item}</ItemListPage>
+                <ItemListPage key={item} value={item} styled={styled} onClick={onClickItemPage}>{item}</ItemListPage>
             )
         });
     }
 
-    renderFilterItem = () => {
+    function renderFilterItem() {
         const arr = [25, 50];
+
         return arr.map(item => {
             let styled = null;
-            if (item === this.state.filterPage) {
+            if (item === filterPage) {
                 styled = 'blue';
             }
             return (
-               <FilterPageItem key={item} value={item} styled={styled} onClick={this.onClickFilterItem}>{item}</FilterPageItem> 
+               <FilterPageItem key={item} value={item} styled={styled} onClick={onClickFilterItem}>{item}</FilterPageItem> 
             )
         });
     }
 
-    render() {
-        
-        const {styled : {wrapper, title, list}, typeSection} = this.props;
-        const {dataList, loading, error} = this.state;
-        
-        let items = null;
-        let titleList = null;
-        let itemsPage = null;
-        let itemFilterPage = this.renderFilterItem();
-
-        const errorMessage = error ? <ErrorMessage/> : null;   
-        const spinner = loading ? <Spinner/> : null;
-
-        if (dataList) {
-            items = this.renderItem(dataList);
-        }
-        if (typeSection === 'characters' && !loading && dataList) {
-            itemsPage = this.renderItemPage(2134);
-            titleList = "Персонажи";
-        } else if (typeSection === 'books' && !loading && dataList) {
-            titleList = "Книги";
-        } else if (typeSection === 'houses' && !loading && dataList) {
-            titleList = "Дома";
-            itemsPage = this.renderItemPage(445);
-        } 
+    function onClickItemPage(e) {
+        setPage(e.target.value);
+    }
     
-        const content = <>
-                            <Title as={title}>{titleList}</Title>
-                            <ContainerScroolBar>
-                                <List as={list}>
-                                    {items}
-                                </List>
-                            </ContainerScroolBar>
-                            <ListPage>
-                                {itemsPage}
-                            </ListPage>           
-        </>
+    function onClickFilterItem(e) {
+        setFilterPage(e.target.value);
+        setPage(1);
+    }
 
-        if (titleList === "Книги") {
-            return (
-                    <Wrapper as={wrapper}>
-                        {errorMessage}
-                        {spinner}
-                        {content}
-                    </Wrapper>
-            )
-        }
+    
+    const {Title, List} = styledObj;
+    
+    let items;
+    if (itemList) {
+        items = renderItem(itemList);
+    }
 
+    const spinner = loading ? <Spinner as={SpinnerStyled}/> : null;
+
+    const content = loading ? null :<>
+                                        <Title>{titleList}</Title>
+                                        <ContainerScroolBar>
+                                            <List>
+                                                {items}
+                                            </List>
+                                        </ContainerScroolBar>            
+                                    </>;
+
+    if (titleList === "Книги") {
         return (
-            <Wrapper height={'100%'} as={wrapper}>  
-                {errorMessage}
+            <>  
                 {spinner}
                 {content}
-                <FilterPageSize>
-                    <div>Фильтр:</div>
-                    {itemFilterPage}
-                </FilterPageSize>
-            </Wrapper>
-        )
-    }      
+            </>
+        );
+    }
+
+    let itemsPage = renderItemPage(itemsAmount);
+    let itemFilterPage = renderFilterItem();
+
+    return (
+        <>
+            {content}
+            {spinner}
+            <ListPage>
+                {itemsPage}
+            </ListPage>   
+            <FilterPageSize>
+                <div>Фильтр:</div>
+                {itemFilterPage}
+            </FilterPageSize>
+        </> 
+    )
 }
+
+export default ItemList;
+
+
+

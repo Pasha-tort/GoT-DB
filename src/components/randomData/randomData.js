@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 
 import styled from 'styled-components';
+import {styledObj} from '../app';
 
 import {Data, FieldData} from '../dataAndFieldData';
 import Spinner from '../spinner';
@@ -8,7 +9,6 @@ import ErrorMessage from '../errorMessage';
 
 import GoTServices from '../../services/GoTServices';
 
-const Wrapper = styled.div``
 const SpinnerStyled = styled.div`
     width: 300px;
 `
@@ -24,7 +24,7 @@ export default class RandomData extends Component {
     state={
         randomData : null,
         randomSection : null,
-        loading : true,
+        loading : false,
         error : false,
     }
 
@@ -34,6 +34,7 @@ export default class RandomData extends Component {
     }
 
     componentWillUnmount = () => {
+        this.setState({randomSection: null, randomData: null})
         clearInterval(this.timerId);
     }
 
@@ -96,9 +97,9 @@ export default class RandomData extends Component {
                 this.setState({randomSection: null});
         }
     }
-
+    
     render() {
-        const {wrapper, ...resDataStyled} = this.props.styled;
+        const {Wrapper} = styledObj;
         const {randomData, randomSection, loading, error} = this.state;
 
         let content = null;
@@ -108,7 +109,7 @@ export default class RandomData extends Component {
 
             textTitle = "Рандомные данные персонажа: ";
 
-            content =   <Data {...resDataStyled} textTitle={textTitle} data={randomData}>
+            content =   <Data textTitle={textTitle} data={randomData}>
                             <FieldData label={'Пол:'} field={'gender'}/>
                             <FieldData label={'Культура:'} field={'culture'}/>
                             <FieldData label={'Родился:'} field={'born'}/>
@@ -119,7 +120,7 @@ export default class RandomData extends Component {
 
             textTitle = "Рандомные данные книги: ";
 
-            content =   <Data {...resDataStyled} textTitle={textTitle} data={randomData}>
+            content =   <Data textTitle={textTitle} data={randomData}>
                             <FieldData label={'Колличество страниц:'} field={'numberOfPages'}/>
                             <FieldData label={'Публикация:'} field={'publisher'}/>
                             <FieldData label={'Выпущена:'} field={'released'}/>
@@ -129,7 +130,7 @@ export default class RandomData extends Component {
 
             textTitle = "Рандомные данные дома: ";
             
-            content =   <Data {...resDataStyled} textTitle={textTitle} data={randomData}>
+            content =   <Data textTitle={textTitle} data={randomData}>
                             <FieldData label={'Регион:'} field={'region'}/>
                             <FieldData label={'Язык:'} field={'words'}/>
                         </Data>
@@ -139,15 +140,83 @@ export default class RandomData extends Component {
         }
 
         const spinner = loading ? <Spinner as={SpinnerStyled}/> : null;
-        const errorMessage = error ? <ErrorMessage onClickError={this.onClickError} width={'100%'}/> : null;
-
+        const errorMessage = error ? <ErrorMessage onClickError={this.onClickErrorReboot} width={'100%'}/> : null;
+    
         return (
-            <Wrapper width={'100%'} as={wrapper}>
+            <Wrapper width={'100%'}>
                 {spinner}
                 {errorMessage}
                 {content}
             </Wrapper>
         )
+     
     }
 }
+
+
+
+const ButtonShowRandomData = styled.button`
+    margin-top: 20px;
+    width: 160px;
+    height: 50px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background: #fff;
+    color: rgb(52, 52, 189);
+    transition: 0.2s all;
+    font-size: 18px;
+    :hover {
+        background: rgb(52, 52, 189);
+        color: #fff;
+        transition: 0.2s all;
+    }
+`
+
+const ContainerRandomDataStyled = styled.div`
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+`
+
+const FixContainerHeight = styled.div`
+    min-height: 260px;
+    width: 100%;
+`
+
+
+class ContainerRandomData extends Component {
+
+    state = {
+        showRandomData : true,
+    }
+
+    onShowRandomData = () => {
+        this.setState(({showRandomData}) => {
+            return {
+                showRandomData : !showRandomData
+            }
+        })
+    }
+
+    render() {
+        const {showRandomData} = this.state;
+        const {styled} = this.props;
+
+        let textRandomBlockButton = showRandomData ? 'Скрыть данные' : 'Показать данные';
+        let randomData = showRandomData ? <RandomData styled={styled}/> : null;
+
+        return (
+            <ContainerRandomDataStyled>
+                <FixContainerHeight>
+                    {randomData}
+                </FixContainerHeight>
+                <ButtonShowRandomData onClick={this.onShowRandomData}>{textRandomBlockButton}</ButtonShowRandomData>
+            </ContainerRandomDataStyled>
+        )
+    }
+}
+
+export {ContainerRandomData};
 
